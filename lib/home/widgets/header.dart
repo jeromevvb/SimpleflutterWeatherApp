@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
 class Header extends StatelessWidget {
+  var temperature;
+
+  Header(this.temperature);
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -20,7 +24,7 @@ class Header extends StatelessWidget {
             Container(
               padding: EdgeInsets.only(bottom: 5),
               child: Text(
-                '38\u00B0',
+                temperature.toString() + '\u00B0',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 40.00,
