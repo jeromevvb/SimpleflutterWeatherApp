@@ -5,6 +5,7 @@ import 'widgets/listview.dart';
 import 'dart:convert' as convert;
 import 'package:http/http.dart' as http;
 import 'package:moment/moment.dart';
+import 'package:geolocator/geolocator.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -14,10 +15,60 @@ class Home extends StatefulWidget {
 class _State extends State<Home> {
   var temperature;
   var weather;
+  Position _currentPosition;
+  String _currentCity;
+
+  Future getPosition() async {
+    try {
+      Position position = await Geolocator()
+          .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+
+      setState(() {
+        _currentPosition = position;
+      });
+
+      this.getWeather();
+      this.getCity();
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future getCity() async {
+    try {
+      List<Placemark> p = await Geolocator().placemarkFromCoordinates(
+          _currentPosition.latitude, _currentPosition.longitude);
+
+      Placemark place = p[0];
+
+      setState(() {
+        _currentCity = "${place.locality}, ${place.country}";
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  //   Future getAddressFromLatLng() async {
+  //   try {
+  //     List<Placemark> p = await Geolocator().placemarkFromCoordinates(
+  //         _currentPosition.latitude, _currentPosition.longitude);
+
+  //     Placemark place = p[0];
+
+  //     setState(() {
+  //       _currentAddress =
+  //           "${place.locality}, ${place.postalCode}, ${place.country}";
+  //     });
+  //   } catch (e) {
+  //     print(e);
+  //   }
+  // }
 
   Future getWeather() async {
-    const url =
-        'http://api.openweathermap.org/data/2.5/weather?q=Ko Samui&appid=5fc47362925abcb0b8417e49c8cc59e0&units=metric';
+    // get weather
+    var url =
+        "http://api.openweathermap.org/data/2.5/weather?lat=${_currentPosition.latitude}&lon=${_currentPosition.longitude}&appid=5fc47362925abcb0b8417e49c8cc59e0&units=metric";
 
     // Await the http get response, then decode the json-formatted response.
     try {
@@ -38,7 +89,7 @@ class _State extends State<Home> {
   @override
   void initState() {
     super.initState();
-    this.getWeather();
+    this.getPosition();
   }
 
   @override
@@ -61,7 +112,7 @@ class _State extends State<Home> {
               ]),
               Row(children: [
                 Text(
-                  'Ko Samui',
+                  _currentCity.toString(),
                   style: TextStyle(fontSize: 15),
                 ),
                 SizedBox(width: 5),
